@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      # Must match @CircuitBreaker(name = "paymentServiceCB")
+      paymentServiceCB:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 10
+
+        failure-rate-threshold: 50
+
+        slow-call-rate-threshold: 75
+        slow-call-duration-threshold: 2s
+
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+
+        register-health-indicator: true
+
+# Spring Boot Actuator Endpoints for Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true

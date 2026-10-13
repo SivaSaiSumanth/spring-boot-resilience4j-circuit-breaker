@@ -1,0 +1,30 @@
+Test plan
+
+1
+Establish normal operation
+Send 2 requests to the normal URL, without a query parameter.
+POST /api/payments/process
+Expected: SUCCESS
+
+
+
+2
+Trigger the circuit breaker
+Send 10 failing requests, one after another.
+POST /api/payments/process?fail=true
+Expected: your service returns the FALLBCK response for each failure. After the tenth recorded failure, check Actuator; the state should be OPEN.
+
+
+
+3
+Verify OPEN state
+Immediately send 3 normal requests during the 60-second OPEN period.
+POST /api/payments/process
+Expected: FALLBCK, not SUCCESS. The protected payment-processing method should not execute.
+
+
+
+4
+Verify HALF_OPEN and recovery
+After the 60-second wait, send up to 3 successful requests without ?fail=true, checking Actuator between calls.
+Expected: HALF_OPEN during recovery testing, followed by CLOSED if all permitted probe calls succeed.
